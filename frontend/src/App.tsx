@@ -7,7 +7,7 @@ interface Tarea {
 }
 
 // URL de tu backend desplegado en Render
-const API_URL = 'https://miproyecreto-crud-2.onrender.com';
+const API_URL = 'https://miproyectoreact-crud-2.onrender.com';
 
 function App() {
   const [tareas, setTareas] = useState<Tarea[]>([])
