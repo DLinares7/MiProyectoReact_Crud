@@ -15,13 +15,17 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 2. LEER CONFIGURACIÓN Y CONECTAR A MONGODB (Compatible con Render y local)
+// 2. LEER CONFIGURACIÓN Y CONECTAR A MONGODB CON SSL EXPLICITO
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB") 
                             ?? builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value;
 var mongoDatabaseName = builder.Configuration.GetSection("MongoDbSettings:DatabaseName").Value ?? "TestDatabase";
 
-// Registramos el cliente de MongoDB para poder usarlo en toda la app
-builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
+// Configuración robusta para prevenir fallos de SSL/TLS en entornos Linux (Render)
+var settings = MongoClientSettings.FromConnectionString(mongoConnectionString);
+settings.SslSettings = new SslSettings { CheckCertificateRevocation = false };
+
+// Registramos el cliente de MongoDB configurado para toda la app
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(settings));
 
 var app = builder.Build();
 
