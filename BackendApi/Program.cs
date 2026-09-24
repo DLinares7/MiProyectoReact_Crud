@@ -24,6 +24,8 @@ var mongoDatabaseName = builder.Configuration.GetSection("MongoDbSettings:Databa
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
 
 var app = builder.Build();
+
+// ¡IMPORTANTE! UseCors debe ir aquí, antes de los endpoints para evitar bloqueos y errores 404
 app.UseCors("AllowReact");
 
 // 3. ENDPOINTS PARA MONGODB
