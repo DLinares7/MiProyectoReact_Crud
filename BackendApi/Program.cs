@@ -4,7 +4,7 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuración de CORS (Lo que ya teníamos)
+// 1. ConfiguraciÃ³n de CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
@@ -15,9 +15,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 2. LEER CONFIGURACIÓN Y CONECTAR A MONGODB
-var mongoConnectionString = builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value;
-var mongoDatabaseName = builder.Configuration.GetSection("MongoDbSettings:DatabaseName").Value;
+// 2. LEER CONFIGURACIÃ“N Y CONECTAR A MONGODB (Compatible con Render y local)
+var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB") 
+                            ?? builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value;
+var mongoDatabaseName = builder.Configuration.GetSection("MongoDbSettings:DatabaseName").Value ?? "TestDatabase";
 
 // Registramos el cliente de MongoDB para poder usarlo en toda la app
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionString));
@@ -25,7 +26,7 @@ builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnectionStrin
 var app = builder.Build();
 app.UseCors("AllowReact");
 
-// 3. NUEVOS ENDPOINTS PARA MONGODB
+// 3. ENDPOINTS PARA MONGODB
 // Obtener todas las tareas
 app.MapGet("/tareas", (IMongoClient cliente) =>
 {
@@ -46,7 +47,7 @@ app.MapPost("/tareas", (IMongoClient cliente, Tarea nuevaTarea) =>
     return Results.Ok(nuevaTarea);
 });
 
-// El endpoint del clima que ya tenías (lo dejamos para no romper tu React por ahora)
+// El endpoint del clima por defecto
 var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
 app.MapGet("/weatherforecast", () =>
 {
@@ -64,10 +65,7 @@ app.MapPut("/tareas/{id}", (IMongoClient cliente, string id, Tarea tareaActualiz
     var baseDatos = cliente.GetDatabase(mongoDatabaseName);
     var coleccion = baseDatos.GetCollection<Tarea>("Tareas");
 
-    // Buscamos la tarea por su ID en MongoDB
     var filtro = Builders<Tarea>.Filter.Eq(t => t.Id, id);
-
-    // Nos aseguramos de mantener el mismo ID
     tareaActualizada.Id = id;
 
     coleccion.ReplaceOne(filtro, tareaActualizada);
@@ -94,7 +92,6 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
 
-// Nuestro nuevo modelo para MongoDB
 public class Tarea
 {
     [BsonId]

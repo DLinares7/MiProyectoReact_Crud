@@ -6,13 +6,16 @@ interface Tarea {
   completada: boolean;
 }
 
+// URL de tu backend desplegado en Render
+const API_URL = 'https://miproyecreto-crud-2.onrender.com';
+
 function App() {
   const [tareas, setTareas] = useState<Tarea[]>([])
   const [nombreTarea, setNombreTarea] = useState('')
 
   // [READ] Leer tareas
   const cargarTareas = () => {
-    fetch('http://localhost:5288/tareas')
+    fetch(`${API_URL}/tareas`)
       .then(res => res.json())
       .then(data => setTareas(data))
       .catch(error => console.error("Error cargando tareas:", error))
@@ -27,7 +30,7 @@ function App() {
     e.preventDefault()
     if (!nombreTarea.trim()) return
 
-    fetch('http://localhost:5288/tareas', {
+    fetch(`${API_URL}/tareas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre: nombreTarea, completada: false })
@@ -43,7 +46,7 @@ function App() {
   const toggleCompletada = (tarea: Tarea) => {
     const tareaActualizada = { ...tarea, completada: !tarea.completada }
 
-    fetch(`http://localhost:5288/tareas/${tarea.id}`, {
+    fetch(`${API_URL}/tareas/${tarea.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tareaActualizada)
@@ -54,7 +57,7 @@ function App() {
 
   // [DELETE] Borrar tarea
   const eliminarTarea = (id: string) => {
-    fetch(`http://localhost:5288/tareas/${id}`, {
+    fetch(`${API_URL}/tareas/${id}`, {
       method: 'DELETE'
     })
       .then(() => cargarTareas())
