@@ -1,7 +1,7 @@
 services:
   - type: web
     name: miproyecreto-backend
-    env: dotnet
+    runtime: dotnet
     region: ohio
     plan: free
     rootDir: BackendApi
