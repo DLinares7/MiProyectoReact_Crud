@@ -4,6 +4,6 @@ services:
     env: dotnet
     region: ohio
     plan: free
-    buildCommand: dotnet build BackendApi/BackendApi.csproj -c Release && dotnet publish BackendApi/BackendApi.csproj -c Release -o out
-    startPath: BackendApi
+    rootDir: BackendApi
+    buildCommand: dotnet build -c Release && dotnet publish -c Release -o out
     startCommand: dotnet out/BackendApi.dll
