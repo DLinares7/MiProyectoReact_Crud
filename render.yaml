@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: miproyecreto-backend
+    env: dotnet
+    region: ohio
+    plan: free
+    buildCommand: dotnet build BackendApi/BackendApi.csproj -c Release && dotnet publish BackendApi/BackendApi.csproj -c Release -o out
+    startPath: BackendApi
+    startCommand: dotnet out/BackendApi.dll

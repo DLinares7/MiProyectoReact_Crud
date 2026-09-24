@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AtWoQEyy1Gg=",
+  "dgSpecHash": "cQx4wTF534A=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Usuario\\Desktop\\MiProyectoReact\\BackendApi\\BackendApi.csproj",
+  "projectFilePath": "C:\\Users\\Usuario\\Desktop\\MiProyectoReact_Crud\\BackendApi\\BackendApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Usuario\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",
     "C:\\Users\\Usuario\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.14\\microsoft.aspnetcore.openapi.9.0.14.nupkg.sha512",
