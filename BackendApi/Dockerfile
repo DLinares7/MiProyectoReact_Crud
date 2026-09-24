@@ -11,8 +11,8 @@ RUN dotnet publish -c Release -o out
 # Etapa de ejecución
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 
-# Instalar certificados CA necesarios para conexiones SSL con MongoDB Atlas
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+# Forzar a .NET a usar su propia implementación TLS administrada (Bypassea restricciones estrictas de OpenSSL)
+ENV DOTNET_SYSTEM_NET_SECURITY_USE_MANAGED_SSL=true
 
 WORKDIR /app
 COPY --from=build /app/out .
