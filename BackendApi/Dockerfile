@@ -2,9 +2,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
+# Copiar el archivo de proyecto y restaurar dependencias
 COPY *.csproj ./
 RUN dotnet restore
 
+# Copiar todo el código restante y publicar
 COPY . ./
 RUN dotnet publish -c Release -o out
 
@@ -13,7 +15,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=build /app/out .
 
-# Render asigna un puerto dinámico, pero por defecto ASP.NET Core escucha en el 8080
+# Configurar puerto para Render
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
