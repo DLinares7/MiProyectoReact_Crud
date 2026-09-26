@@ -65,66 +65,120 @@ function App() {
   }
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '30px', fontFamily: 'system-ui' }}>
-      <h1 style={{ textAlign: 'center' }}>Gestor de Tareas Full-Stack</h1>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#121212',
+      color: '#e0e0e0',
+      padding: '40px 20px',
+      fontFamily: 'Inter, system-ui, sans-serif'
+    }}>
+      <div style={{ maxWidth: '550px', margin: '0 auto' }}>
 
-      <form onSubmit={agregarTarea} style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
-        <input
-          type="text"
-          value={nombreTarea}
-          onChange={(e) => setNombreTarea(e.target.value)}
-          placeholder="¿Qué necesitas hacer?"
-          style={{ flex: 1, padding: '10px', fontSize: '16px', borderRadius: '4px', border: '1px solid #ccc' }}
-        />
-        <button type="submit" style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>
-          Agregar
-        </button>
-      </form>
+        {/* Encabezado Profesional */}
+        <header style={{ textAlign: 'center', marginBottom: '35px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: '0 0 8px 0', color: '#ffffff' }}>
+            Gestor de Tareas
+          </h1>
+          <p style={{ fontSize: '14px', color: '#888888', margin: 0 }}>
+            Aplicación Full-Stack en la nube
+          </p>
+        </header>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {tareas.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#666' }}>No hay tareas pendientes.</p>
-        ) : (
-          tareas.map((tarea) => (
-            <li key={tarea.id} style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '15px',
-              marginBottom: '10px',
-              backgroundColor: '#242424',
-              borderRadius: '6px',
-              border: '1px solid #444'
-            }}>
-              <div
-                onClick={() => toggleCompletada(tarea)}
-                style={{
-                  cursor: 'pointer',
-                  flex: 1,
-                  textDecoration: tarea.completada ? 'line-through' : 'none',
-                  color: tarea.completada ? '#888' : '#fff'
-                }}
-              >
-                {tarea.completada ? '✅' : '⏳'} {tarea.nombre}
-              </div>
+        {/* Formulario de Creación */}
+        <form onSubmit={agregarTarea} style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
+          <input
+            type="text"
+            value={nombreTarea}
+            onChange={(e) => setNombreTarea(e.target.value)}
+            placeholder="¿Qué tarea deseas agregar?"
+            style={{
+              flex: 1,
+              padding: '12px 16px',
+              fontSize: '15px',
+              borderRadius: '8px',
+              border: '1px solid #333',
+              backgroundColor: '#1e1e1e',
+              color: '#ffffff',
+              outline: 'none'
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              padding: '12px 22px',
+              fontSize: '15px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              transition: 'background 0.2s'
+            }}
+          >
+            Agregar
+          </button>
+        </form>
 
-              <button
-                onClick={() => eliminarTarea(tarea.id!)}
-                style={{
-                  backgroundColor: '#dc3545',
-                  color: 'white',
-                  border: 'none',
-                  padding: '5px 10px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Borrar
-              </button>
-            </li>
-          ))
-        )}
-      </ul>
+        {/* Listado de Tareas */}
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {tareas.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: '#666', fontSize: '15px' }}>
+              No hay tareas pendientes por ahora. ¡Agrega una!
+            </div>
+          ) : (
+            tareas.map((tarea) => (
+              <li key={tarea.id} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '14px 18px',
+                marginBottom: '12px',
+                backgroundColor: '#1a1a1a',
+                borderRadius: '8px',
+                border: '1px solid #2a2a2a',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}>
+                <div
+                  onClick={() => toggleCompletada(tarea)}
+                  style={{
+                    cursor: 'pointer',
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '15px',
+                    textDecoration: tarea.completada ? 'line-through' : 'none',
+                    color: tarea.completada ? '#6b7280' : '#f3f4f6',
+                    userSelect: 'none'
+                  }}
+                >
+                  <span style={{ fontSize: '16px' }}>{tarea.completada ? '✅' : '⏳'}</span>
+                  <span>{tarea.nombre}</span>
+                </div>
+
+                <button
+                  onClick={() => eliminarTarea(tarea.id!)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: '#ef4444',
+                    border: '1px solid #7f1d1d',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Borrar
+                </button>
+              </li>
+            ))
+          )}
+        </ul>
+
+      </div>
     </div>
   )
 }
