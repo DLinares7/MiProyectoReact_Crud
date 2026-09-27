@@ -1,0 +1,241 @@
+import React, { useEffect, useState } from 'react';
+
+interface Cliente {
+    id?: string;
+    nombre: string;
+    estado: 'Activo' | 'Inactivo' | 'Pendiente';
+    completada: boolean;
+}
+
+const API_URL = 'https://miproyectoreact-crud-2.onrender.com';
+
+export const ClientesPage: React.FC = () => {
+    const [clientes, setClientes] = useState<Cliente[]>([]);
+    const [nombreCliente, setNombreCliente] = useState('');
+
+    const cargarClientes = () => {
+        fetch(`${API_URL}/tareas`)
+            .then(res => res.json())
+            .then((data: unknown) => {
+                if (Array.isArray(data)) {
+                    const adaptados = data.map((item) => {
+                        const rawItem = item as Record<string, unknown>;
+
+                        const idStr = rawItem.id as string;
+                        const estadoGuardadoLocal = idStr ? localStorage.getItem(`estado_cliente_${idStr}`) : null;
+
+                        // Determinamos el estado de manera directa sin variables muertas
+                        const estadoActual: 'Activo' | 'Inactivo' | 'Pendiente' =
+                            (estadoGuardadoLocal === 'Activo' || estadoGuardadoLocal === 'Inactivo' || estadoGuardadoLocal === 'Pendiente')
+                                ? (estadoGuardadoLocal as 'Activo' | 'Inactivo' | 'Pendiente')
+                                : (rawItem.completada ? 'Activo' : 'Pendiente');
+
+                        return {
+                            id: idStr,
+                            nombre: (rawItem.nombre as string) || '',
+                            estado: estadoActual,
+                            completada: Boolean(rawItem.completada)
+                        };
+                    });
+                    setClientes(adaptados);
+                }
+            })
+            .catch(error => console.error("Error cargando clientes:", error));
+    };
+
+    useEffect(() => {
+        cargarClientes();
+    }, []);
+
+    const agregarCliente = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!nombreCliente.trim()) return;
+
+        const nuevoCliente = {
+            nombre: nombreCliente,
+            completada: false
+        };
+
+        fetch(`${API_URL}/tareas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoCliente)
+        })
+            .then(res => res.json())
+            .then((createdItem: unknown) => {
+                const item = createdItem as Record<string, unknown>;
+                if (item && item.id) {
+                    localStorage.setItem(`estado_cliente_${item.id}`, 'Pendiente');
+                }
+                setNombreCliente('');
+                cargarClientes();
+            })
+            .catch(error => console.error("Error guardando cliente:", error));
+    };
+
+    // Rotación impecable entre los 3 estados: Pendiente -> Activo -> Inactivo -> Pendiente
+    const cambiarEstado = (cliente: Cliente) => {
+        let siguienteEstado: 'Activo' | 'Inactivo' | 'Pendiente' = 'Pendiente';
+
+        if (cliente.estado === 'Pendiente') {
+            siguienteEstado = 'Activo';
+        } else if (cliente.estado === 'Activo') {
+            siguienteEstado = 'Inactivo';
+        } else if (cliente.estado === 'Inactivo') {
+            siguienteEstado = 'Pendiente';
+        }
+
+        // Guardamos el estado visual de forma persistente en el navegador para evitar limitaciones de la nube
+        if (cliente.id) {
+            localStorage.setItem(`estado_cliente_${cliente.id}`, siguienteEstado);
+        }
+
+        // El backend recibe 'completada: true' solo si está Activo (para que el Dashboard lo cuente bien)
+        const clienteActualizado = {
+            ...cliente,
+            completada: siguienteEstado === 'Activo'
+        };
+
+        fetch(`${API_URL}/tareas/${cliente.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(clienteActualizado)
+        })
+            .then(() => cargarClientes())
+            .catch(error => console.error("Error actualizando estado:", error));
+    };
+
+    const eliminarCliente = (id: string) => {
+        fetch(`${API_URL}/tareas/${id}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+                localStorage.removeItem(`estado_cliente_${id}`);
+                cargarClientes();
+            })
+            .catch(error => console.error("Error borrando cliente:", error));
+    };
+
+    const getBadgeStyle = (estado: string) => {
+        switch (estado) {
+            case 'Activo':
+                return { backgroundColor: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' };
+            case 'Inactivo':
+                return { backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca' };
+            default: // Pendiente
+                return { backgroundColor: '#fef9c3', color: '#854d0e', border: '1px solid #fef08a' };
+        }
+    };
+
+    return (
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+            <header style={{ marginBottom: '25px' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 5px 0' }}>
+                    👥 Gestión de Clientes
+                </h1>
+                <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
+                    Administra la cartera de clientes y su estado actual en la base de datos.
+                </p>
+            </header>
+
+            {/* Formulario */}
+            <form onSubmit={agregarCliente} style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+                <input
+                    type="text"
+                    value={nombreCliente}
+                    onChange={(e) => setNombreCliente(e.target.value)}
+                    placeholder="Nombre del cliente..."
+                    style={{
+                        flex: 1,
+                        padding: '10px 14px',
+                        fontSize: '14px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        outline: 'none'
+                    }}
+                />
+                <button
+                    type="submit"
+                    style={{
+                        padding: '10px 18px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        border: '1px solid #2563eb',
+                        borderRadius: '6px'
+                    }}
+                >
+                    Agregar Cliente
+                </button>
+            </form>
+
+            {/* Listado */}
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {clientes.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '30px 0', color: '#94a3b8', fontSize: '14px' }}>
+                        No hay clientes registrados por ahora.
+                    </div>
+                ) : (
+                    clientes.map((cliente) => (
+                        <li key={cliente.id} style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '12px 16px',
+                            marginBottom: '10px',
+                            backgroundColor: '#ffffff',
+                            borderRadius: '6px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
+                                <span style={{
+                                    fontSize: '15px',
+                                    fontWeight: '500',
+                                    color: cliente.estado === 'Inactivo' ? '#94a3b8' : '#334155',
+                                    textDecoration: cliente.estado === 'Inactivo' ? 'line-through' : 'none'
+                                }}>
+                                    {cliente.nombre}
+                                </span>
+
+                                {/* Botón interactivo para cambiar estado */}
+                                <button
+                                    onClick={() => cambiarEstado(cliente)}
+                                    style={{
+                                        padding: '4px 10px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        ...getBadgeStyle(cliente.estado)
+                                    }}
+                                    title="Haz clic para cambiar el estado"
+                                >
+                                    {cliente.estado}
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => eliminarCliente(cliente.id!)}
+                                style={{
+                                    backgroundColor: 'transparent',
+                                    color: '#ef4444',
+                                    border: '1px solid #fecaca',
+                                    padding: '5px 10px',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontWeight: '500'
+                                }}
+                            >
+                                Borrar
+                            </button>
+                        </li>
+                    ))
+                )}
+            </ul>
+        </div>
+    );
+};
