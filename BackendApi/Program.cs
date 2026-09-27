@@ -167,7 +167,7 @@ public class Producto
     public string? Id { get; set; }
 
     [BsonElement("nombre")]
-    public string Nombre { get.set; } = null!;
+    public string Nombre { get; set; } = null!; // Corregido aquí (get; set;)
 
     [BsonElement("precio")]
     public decimal Precio { get; set; }
