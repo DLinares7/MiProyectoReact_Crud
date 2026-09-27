@@ -101,6 +101,19 @@ app.MapDelete("/tareas/{id}", (IMongoClient cliente, string id) =>
     return Results.NoContent();
 });
 
+// ACTUALIZAR un producto existente (Update)
+app.MapPut("/productos/{id}", (IMongoClient cliente, string id, Producto productoActualizado) =>
+{
+    var baseDatos = cliente.GetDatabase(mongoDatabaseName);
+    var coleccion = baseDatos.GetCollection<Producto>("Productos");
+
+    var filtro = Builders<Producto>.Filter.Eq(p => p.Id, id);
+    productoActualizado.Id = id;
+
+    coleccion.ReplaceOne(filtro, productoActualizado);
+    return Results.Ok(productoActualizado);
+});
+
 app.Run();
 
 // 4. MODELOS DE DATOS
@@ -137,3 +150,4 @@ public class Producto
     [BsonElement("completada")] // Lo usamos para reutilizar la misma lógica de estados de tareas/clientes
     public bool Completada { get; set; }
 }
+
