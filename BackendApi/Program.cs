@@ -114,6 +114,31 @@ app.MapPut("/productos/{id}", (IMongoClient cliente, string id, Producto product
     return Results.Ok(productoActualizado);
 });
 
+// CREAR un nuevo producto (POST)
+app.MapPost("/productos", (IMongoClient cliente, Producto nuevoProducto) =>
+{
+    var baseDatos = cliente.GetDatabase(mongoDatabaseName);
+    var coleccion = baseDatos.GetCollection<Producto>("Productos");
+
+    coleccion.InsertOne(nuevoProducto);
+    return Results.Created($"/productos/{nuevoProducto.Id}", nuevoProducto);
+});
+
+// ELIMINAR un producto por ID (DELETE)
+app.MapDelete("/productos/{id}", (IMongoClient cliente, string id) =>
+{
+    var baseDatos = cliente.GetDatabase(mongoDatabaseName);
+    var coleccion = baseDatos.GetCollection<Producto>("Productos");
+
+    var filtro = Builders<Producto>.Filter.Eq(p => p.Id, id);
+    var resultado = coleccion.DeleteOne(filtro);
+
+    if (resultado.DeletedCount == 0)
+        return Results.NotFound();
+
+    return Results.NoContent();
+});
+
 app.Run();
 
 // 4. MODELOS DE DATOS
