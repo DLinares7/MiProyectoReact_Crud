@@ -33,6 +33,7 @@ var app = builder.Build();
 app.UseCors("AllowReact");
 
 // 3. ENDPOINTS PARA MONGODB
+
 // Obtener todas las tareas
 app.MapGet("/tareas", (IMongoClient cliente) =>
 {
@@ -51,6 +52,16 @@ app.MapPost("/tareas", (IMongoClient cliente, Tarea nuevaTarea) =>
 
     coleccion.InsertOne(nuevaTarea);
     return Results.Ok(nuevaTarea);
+});
+
+// >>> NUEVO ENDPOINT PARA PRODUCTOS <<<
+app.MapGet("/productos", (IMongoClient cliente) =>
+{
+    var baseDatos = cliente.GetDatabase(mongoDatabaseName);
+    var coleccion = baseDatos.GetCollection<Producto>("Productos");
+
+    var productos = coleccion.Find(new BsonDocument()).ToList();
+    return Results.Ok(productos);
 });
 
 // El endpoint del clima por defecto
@@ -109,4 +120,17 @@ public class Tarea
 
     [BsonElement("completada")]
     public bool Completada { get; set; }
+}
+
+public class Producto
+{
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+
+    [BsonElement("nombre")]
+    public string Nombre { get; set; } = null!;
+
+    [BsonElement("precio")]
+    public decimal Precio { get; set; }
 }
