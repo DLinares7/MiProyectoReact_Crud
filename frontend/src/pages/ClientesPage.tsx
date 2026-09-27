@@ -18,7 +18,7 @@ export const ClientesPage: React.FC = () => {
     const registrosPorPagina = 7;
 
     const cargarClientes = () => {
-        fetch(`${API_URL}/tareas`)
+        fetch(`${API_URL}/clientes`)
             .then(res => res.json())
             .then((data: unknown) => {
                 if (Array.isArray(data)) {
@@ -59,7 +59,7 @@ export const ClientesPage: React.FC = () => {
             completada: false
         };
 
-        fetch(`${API_URL}/tareas`, {
+        fetch(`${API_URL}/clientes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevoCliente)
@@ -97,7 +97,7 @@ export const ClientesPage: React.FC = () => {
             completada: siguienteEstado === 'Activo'
         };
 
-        fetch(`${API_URL}/tareas/${cliente.id}`, {
+        fetch(`${API_URL}/clientes/${cliente.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(clienteActualizado)
@@ -107,7 +107,7 @@ export const ClientesPage: React.FC = () => {
     };
 
     const eliminarCliente = (id: string) => {
-        fetch(`${API_URL}/tareas/${id}`, {
+        fetch(`${API_URL}/clientes/${id}`, {
             method: 'DELETE'
         })
             .then(() => {
