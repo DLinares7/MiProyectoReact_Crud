@@ -12,8 +12,10 @@ const API_URL = 'https://miproyectoreact-crud-2.onrender.com';
 
 export const ProductosPage: React.FC = () => {
     const [productos, setProductos] = useState<Producto[]>([]);
+    const [nuevoNombre, setNuevoNombre] = useState('');
+    const [nuevoPrecio, setNuevoPrecio] = useState('');
 
-    // Estados para la paginación (máximo 7 registros por página)
+    // Estados para la paginación (7 registros por página)
     const [paginaActual, setPaginaActual] = useState(1);
     const registrosPorPagina = 7;
 
@@ -50,6 +52,45 @@ export const ProductosPage: React.FC = () => {
         cargarProductos();
     }, []);
 
+    // --- AGREGAR PRODUCTO ---
+    const agregarProducto = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!nuevoNombre.trim() || !nuevoPrecio) return;
+
+        const nuevoProd = {
+            nombre: nuevoNombre.trim(),
+            precio: parseFloat(nuevoPrecio),
+            completada: false
+        };
+
+        fetch(`${API_URL}/productos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoProd)
+        })
+            .then(() => {
+                setNuevoNombre('');
+                setNuevoPrecio('');
+                cargarProductos();
+            })
+            .catch(error => console.error("Error al crear producto:", error));
+    };
+
+    // --- ELIMINAR PRODUCTO ---
+    const eliminarProducto = (id?: string) => {
+        if (!id) return;
+
+        fetch(`${API_URL}/productos/${id}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+                localStorage.removeItem(`estado_producto_${id}`);
+                cargarProductos();
+            })
+            .catch(error => console.error("Error al eliminar producto:", error));
+    };
+
+    // --- CAMBIAR ESTADO ---
     const cambiarEstado = (producto: Producto) => {
         let siguienteEstado: 'Activo' | 'Inactivo' | 'Pendiente' = 'Pendiente';
 
@@ -85,7 +126,7 @@ export const ProductosPage: React.FC = () => {
                 return { backgroundColor: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' };
             case 'Inactivo':
                 return { backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca' };
-            default: // Pendiente
+            default:
                 return { backgroundColor: '#fef9c3', color: '#854d0e', border: '1px solid #fef08a' };
         }
     };
@@ -105,15 +146,63 @@ export const ProductosPage: React.FC = () => {
     };
 
     return (
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-            <header style={{ marginBottom: '25px' }}>
+        <div style={{ maxWidth: '750px', margin: '0 auto' }}>
+            <header style={{ marginBottom: '20px' }}>
                 <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 5px 0' }}>
                     📦 Gestión de Productos
                 </h1>
                 <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
-                    Catálogo de productos y control de estados en la base de datos.
+                    Catálogo de productos, control de estados y administración general.
                 </p>
             </header>
+
+            {/* Formulario para Agregar Producto */}
+            <form onSubmit={agregarProducto} style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+                <input
+                    type="text"
+                    placeholder="Nombre del nuevo producto..."
+                    value={nuevoNombre}
+                    onChange={(e) => setNuevoNombre(e.target.value)}
+                    style={{
+                        flex: 2,
+                        padding: '10px 14px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '14px',
+                        outline: 'none'
+                    }}
+                />
+                <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Precio ($)"
+                    value={nuevoPrecio}
+                    onChange={(e) => setNuevoPrecio(e.target.value)}
+                    style={{
+                        flex: 1,
+                        padding: '10px 14px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '14px',
+                        outline: 'none'
+                    }}
+                />
+                <button
+                    type="submit"
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '14px'
+                    }}
+                >
+                    Agregar
+                </button>
+            </form>
 
             {/* Listado con Paginación */}
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -160,9 +249,27 @@ export const ProductosPage: React.FC = () => {
                                 </button>
                             </div>
 
-                            <span style={{ fontSize: '15px', fontWeight: '600', color: '#16a34a' }}>
-                                ${producto.precio.toFixed(2)}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                <span style={{ fontSize: '15px', fontWeight: '600', color: '#16a34a' }}>
+                                    ${producto.precio.toFixed(2)}
+                                </span>
+
+                                <button
+                                    onClick={() => eliminarProducto(producto.id)}
+                                    style={{
+                                        backgroundColor: 'transparent',
+                                        border: 'none',
+                                        color: '#ef4444',
+                                        cursor: 'pointer',
+                                        fontSize: '16px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px'
+                                    }}
+                                    title="Eliminar producto"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
                         </li>
                     ))
                 )}
