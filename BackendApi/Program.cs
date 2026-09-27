@@ -17,7 +17,7 @@ builder.Services.AddCors(options =>
 
 // 2. LEER CONFIGURACIÓN Y CONECTAR A MONGODB CON SSL EXPLICITO
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB") 
-                            ?? builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value;
+                          ?? builder.Configuration.GetSection("MongoDbSettings:ConnectionString").Value;
 var mongoDatabaseName = builder.Configuration.GetSection("MongoDbSettings:DatabaseName").Value ?? "TestDatabase";
 
 // Configuración robusta para prevenir fallos de SSL/TLS en entornos Linux (Render)
@@ -34,27 +34,27 @@ app.UseCors("AllowReact");
 
 // 3. ENDPOINTS PARA MONGODB
 
-// Obtener todas las tareas
-app.MapGet("/tareas", (IMongoClient cliente) =>
+// Obtener todos los clientes
+app.MapGet("/clientes", (IMongoClient cliente) =>
 {
     var baseDatos = cliente.GetDatabase(mongoDatabaseName);
-    var coleccion = baseDatos.GetCollection<Tarea>("Tareas");
+    var coleccion = baseDatos.GetCollection<Cliente>("Clientes");
 
-    var tareas = coleccion.Find(new BsonDocument()).ToList();
-    return Results.Ok(tareas);
+    var clientes = coleccion.Find(new BsonDocument()).ToList();
+    return Results.Ok(clientes);
 });
 
-// Crear una nueva tarea
-app.MapPost("/tareas", (IMongoClient cliente, Tarea nuevaTarea) =>
+// Crear un nuevo cliente
+app.MapPost("/clientes", (IMongoClient cliente, Cliente nuevoCliente) =>
 {
     var baseDatos = cliente.GetDatabase(mongoDatabaseName);
-    var coleccion = baseDatos.GetCollection<Tarea>("Tareas");
+    var coleccion = baseDatos.GetCollection<Cliente>("Clientes");
 
-    coleccion.InsertOne(nuevaTarea);
-    return Results.Ok(nuevaTarea);
+    coleccion.InsertOne(nuevoCliente);
+    return Results.Created($"/clientes/{nuevoCliente.Id}", nuevoCliente);
 });
 
-// >>> NUEVO ENDPOINT PARA PRODUCTOS <<<
+// >>> ENDPOINT PARA PRODUCTOS <<<
 app.MapGet("/productos", (IMongoClient cliente) =>
 {
     var baseDatos = cliente.GetDatabase(mongoDatabaseName);
@@ -76,26 +76,26 @@ app.MapGet("/weatherforecast", () =>
     )).ToArray();
 });
 
-// ACTUALIZAR una tarea existente (Update)
-app.MapPut("/tareas/{id}", (IMongoClient cliente, string id, Tarea tareaActualizada) =>
+// ACTUALIZAR un cliente existente (Update)
+app.MapPut("/clientes/{id}", (IMongoClient cliente, string id, Cliente clienteActualizado) =>
 {
     var baseDatos = cliente.GetDatabase(mongoDatabaseName);
-    var coleccion = baseDatos.GetCollection<Tarea>("Tareas");
+    var coleccion = baseDatos.GetCollection<Cliente>("Clientes");
 
-    var filtro = Builders<Tarea>.Filter.Eq(t => t.Id, id);
-    tareaActualizada.Id = id;
+    var filtro = Builders<Cliente>.Filter.Eq(c => c.Id, id);
+    clienteActualizado.Id = id;
 
-    coleccion.ReplaceOne(filtro, tareaActualizada);
-    return Results.Ok(tareaActualizada);
+    coleccion.ReplaceOne(filtro, clienteActualizado);
+    return Results.Ok(clienteActualizado);
 });
 
-// BORRAR una tarea (Delete)
-app.MapDelete("/tareas/{id}", (IMongoClient cliente, string id) =>
+// BORRAR un cliente (Delete)
+app.MapDelete("/clientes/{id}", (IMongoClient cliente, string id) =>
 {
     var baseDatos = cliente.GetDatabase(mongoDatabaseName);
-    var coleccion = baseDatos.GetCollection<Tarea>("Tareas");
+    var coleccion = baseDatos.GetCollection<Cliente>("Clientes");
 
-    var filtro = Builders<Tarea>.Filter.Eq(t => t.Id, id);
+    var filtro = Builders<Cliente>.Filter.Eq(c => c.Id, id);
     coleccion.DeleteOne(filtro);
 
     return Results.NoContent();
@@ -147,7 +147,7 @@ record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
 
-public class Tarea
+public class Cliente
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -167,12 +167,11 @@ public class Producto
     public string? Id { get; set; }
 
     [BsonElement("nombre")]
-    public string Nombre { get; set; } = null!;
+    public string Nombre { get.set; } = null!;
 
     [BsonElement("precio")]
     public decimal Precio { get; set; }
 
-    [BsonElement("completada")] // Lo usamos para reutilizar la misma lógica de estados de tareas/clientes
+    [BsonElement("completada")]
     public bool Completada { get; set; }
 }
-
