@@ -257,17 +257,18 @@ export const ProductosPage: React.FC = () => {
                                 <button
                                     onClick={() => eliminarProducto(producto.id)}
                                     style={{
+                                        padding: '6px 14px',
                                         backgroundColor: 'transparent',
-                                        border: 'none',
                                         color: '#ef4444',
+                                        border: '1px solid #fecaca',
+                                        borderRadius: '6px',
                                         cursor: 'pointer',
-                                        fontSize: '16px',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px'
+                                        fontSize: '13px',
+                                        fontWeight: '500'
                                     }}
-                                    title="Eliminar producto"
+                                    title="Borrar producto"
                                 >
-                                    🗑️
+                                    Borrar
                                 </button>
                             </div>
                         </li>
