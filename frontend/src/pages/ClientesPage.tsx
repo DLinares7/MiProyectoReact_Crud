@@ -13,6 +13,10 @@ export const ClientesPage: React.FC = () => {
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [nombreCliente, setNombreCliente] = useState('');
 
+    // Estados para la paginación (máximo 7 registros por página)
+    const [paginaActual, setPaginaActual] = useState(1);
+    const registrosPorPagina = 7;
+
     const cargarClientes = () => {
         fetch(`${API_URL}/tareas`)
             .then(res => res.json())
@@ -24,7 +28,6 @@ export const ClientesPage: React.FC = () => {
                         const idStr = rawItem.id as string;
                         const estadoGuardadoLocal = idStr ? localStorage.getItem(`estado_cliente_${idStr}`) : null;
 
-                        // Determinamos el estado de manera directa sin variables muertas
                         const estadoActual: 'Activo' | 'Inactivo' | 'Pendiente' =
                             (estadoGuardadoLocal === 'Activo' || estadoGuardadoLocal === 'Inactivo' || estadoGuardadoLocal === 'Pendiente')
                                 ? (estadoGuardadoLocal as 'Activo' | 'Inactivo' | 'Pendiente')
@@ -68,12 +71,12 @@ export const ClientesPage: React.FC = () => {
                     localStorage.setItem(`estado_cliente_${item.id}`, 'Pendiente');
                 }
                 setNombreCliente('');
+                setPaginaActual(1); // Opcional: vuelve a la primera página al agregar uno nuevo
                 cargarClientes();
             })
             .catch(error => console.error("Error guardando cliente:", error));
     };
 
-    // Rotación impecable entre los 3 estados: Pendiente -> Activo -> Inactivo -> Pendiente
     const cambiarEstado = (cliente: Cliente) => {
         let siguienteEstado: 'Activo' | 'Inactivo' | 'Pendiente' = 'Pendiente';
 
@@ -85,12 +88,10 @@ export const ClientesPage: React.FC = () => {
             siguienteEstado = 'Pendiente';
         }
 
-        // Guardamos el estado visual de forma persistente en el navegador para evitar limitaciones de la nube
         if (cliente.id) {
             localStorage.setItem(`estado_cliente_${cliente.id}`, siguienteEstado);
         }
 
-        // El backend recibe 'completada: true' solo si está Activo (para que el Dashboard lo cuente bien)
         const clienteActualizado = {
             ...cliente,
             completada: siguienteEstado === 'Activo'
@@ -125,6 +126,20 @@ export const ClientesPage: React.FC = () => {
             default: // Pendiente
                 return { backgroundColor: '#fef9c3', color: '#854d0e', border: '1px solid #fef08a' };
         }
+    };
+
+    // --- LÓGICA DE PAGINACIÓN ---
+    const indiceUltimoRegistro = paginaActual * registrosPorPagina;
+    const indicePrimerRegistro = indiceUltimoRegistro - registrosPorPagina;
+    const clientesVisibles = clientes.slice(indicePrimerRegistro, indiceUltimoRegistro);
+    const totalPaginas = Math.ceil(clientes.length / registrosPorPagina);
+
+    const siguientePagina = () => {
+        if (paginaActual < totalPaginas) setPaginaActual(paginaActual + 1);
+    };
+
+    const paginaAnterior = () => {
+        if (paginaActual > 1) setPaginaActual(paginaActual - 1);
     };
 
     return (
@@ -171,14 +186,14 @@ export const ClientesPage: React.FC = () => {
                 </button>
             </form>
 
-            {/* Listado */}
+            {/* Listado con Paginación */}
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {clientes.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '30px 0', color: '#94a3b8', fontSize: '14px' }}>
                         No hay clientes registrados por ahora.
                     </div>
                 ) : (
-                    clientes.map((cliente) => (
+                    clientesVisibles.map((cliente) => (
                         <li key={cliente.id} style={{
                             display: 'flex',
                             justifyContent: 'space-between',
@@ -200,7 +215,6 @@ export const ClientesPage: React.FC = () => {
                                     {cliente.nombre}
                                 </span>
 
-                                {/* Botón interactivo para cambiar estado */}
                                 <button
                                     onClick={() => cambiarEstado(cliente)}
                                     style={{
@@ -236,6 +250,49 @@ export const ClientesPage: React.FC = () => {
                     ))
                 )}
             </ul>
+
+            {/* Controles de Desplazamiento (Paginación) */}
+            {clientes.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', padding: '10px 0' }}>
+                    <button
+                        onClick={paginaAnterior}
+                        disabled={paginaActual === 1}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: paginaActual === 1 ? '#e2e8f0' : '#2563eb',
+                            color: paginaActual === 1 ? '#94a3b8' : 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                        }}
+                    >
+                        Anterior
+                    </button>
+
+                    <span style={{ fontSize: '14px', color: '#475569', fontWeight: '500' }}>
+                        Página {paginaActual} de {totalPaginas || 1}
+                    </span>
+
+                    <button
+                        onClick={siguientePagina}
+                        disabled={paginaActual === totalPaginas || totalPaginas === 0}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: (paginaActual === totalPaginas || totalPaginas === 0) ? '#e2e8f0' : '#2563eb',
+                            color: (paginaActual === totalPaginas || totalPaginas === 0) ? '#94a3b8' : 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: (paginaActual === totalPaginas || totalPaginas === 0) ? 'not-allowed' : 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                        }}
+                    >
+                        Siguiente
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
