@@ -14,6 +14,7 @@ interface Producto {
     nombre: string;
     precio: number;
     stock: number;
+    completada: boolean; // Añadido para reflejar el estado activo
 }
 
 export const DashboardPage: React.FC = () => {
@@ -23,7 +24,7 @@ export const DashboardPage: React.FC = () => {
 
     const [totalClientes, setTotalClientes] = useState(0);
     const [clientesActivos, setClientesActivos] = useState(0);
-    const [totalProductos, setTotalProductos] = useState(0);
+    const [productosActivos, setProductosActivos] = useState(0); // Cambiado para almacenar solo los activos
 
     useEffect(() => {
         // Consultar clientes/tareas desde la base de datos
@@ -33,20 +34,28 @@ export const DashboardPage: React.FC = () => {
                 if (Array.isArray(data)) {
                     const tareasTyped = data as Tarea[];
                     setTotalClientes(tareasTyped.length);
-                    // Contar únicamente los que están completados (activos)
                     const activos = tareasTyped.filter(t => t.completada).length;
                     setClientesActivos(activos);
                 }
             })
             .catch(err => console.error("Error al cargar métricas de clientes:", err));
 
-        // Consultar productos
+        // Consultar productos y filtrar los activos
         fetch(`${API_URL}/productos`)
             .then(res => res.json())
             .then((data: unknown) => {
                 if (Array.isArray(data)) {
                     const productosTyped = data as Producto[];
-                    setTotalProductos(productosTyped.length);
+                    // Contar únicamente los productos activos o completados, considerando también el localStorage si lo modificó el usuario visualmente
+                    const activos = productosTyped.filter(p => {
+                        const estadoLocal = p.id ? localStorage.getItem(`estado_producto_${p.id}`) : null;
+                        if (estadoLocal) {
+                            return estadoLocal === 'Activo';
+                        }
+                        return p.completada;
+                    }).length;
+
+                    setProductosActivos(activos);
                 }
             })
             .catch(err => console.error("Error al cargar métricas de productos:", err));
@@ -86,7 +95,7 @@ export const DashboardPage: React.FC = () => {
                     <span style={styles.cardIcon}>📦</span>
                     <div>
                         <h3 style={styles.cardTitle}>Productos Activos</h3>
-                        <p style={styles.cardValue}>{totalProductos}</p>
+                        <p style={styles.cardValue}>{productosActivos}</p>
                     </div>
                 </div>
             </div>
