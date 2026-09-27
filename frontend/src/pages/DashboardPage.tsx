@@ -27,14 +27,14 @@ export const DashboardPage: React.FC = () => {
     const [productosActivos, setProductosActivos] = useState(0); // Cambiado para almacenar solo los activos
 
     useEffect(() => {
-        // Consultar clientes/tareas desde la base de datos
-        fetch(`${API_URL}/tareas`)
+        // Consultar clientes/clientes desde la base de datos
+        fetch(`${API_URL}/clientes`)
             .then(res => res.json())
             .then((data: unknown) => {
                 if (Array.isArray(data)) {
-                    const tareasTyped = data as Tarea[];
-                    setTotalClientes(tareasTyped.length);
-                    const activos = tareasTyped.filter(t => t.completada).length;
+                    const clientesTyped = data as Tarea[];
+                    setTotalClientes(clientesTyped.length);
+                    const activos = clientesTyped.filter(t => t.completada).length;
                     setClientesActivos(activos);
                 }
             })
