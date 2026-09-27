@@ -133,4 +133,7 @@ public class Producto
 
     [BsonElement("precio")]
     public decimal Precio { get; set; }
+
+    [BsonElement("completada")] // Lo usamos para reutilizar la misma lógica de estados de tareas/clientes
+    public bool Completada { get; set; }
 }
