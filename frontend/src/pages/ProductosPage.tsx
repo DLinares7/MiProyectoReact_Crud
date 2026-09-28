@@ -266,7 +266,7 @@ export const ProductosPage: React.FC = () => {
                                         fontSize: '13px',
                                         fontWeight: '500'
                                     }}
-                                    title="Borrar producto"
+                                    title="Borrar producto "
                                 >
                                     Borrar
                                 </button>
