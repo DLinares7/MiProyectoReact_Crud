@@ -260,13 +260,13 @@ export const ProductosPage: React.FC = () => {
                                         padding: '6px 14px',
                                         backgroundColor: 'transparent',
                                         color: '#ef4444',
-                                        border: '1px solid #fecaca',
+                                        border: '1px solid #f6b9b9',
                                         borderRadius: '6px',
                                         cursor: 'pointer',
                                         fontSize: '13px',
                                         fontWeight: '500'
                                     }}
-                                    title="Borrar producto "
+                                    title=" Borrar producto  "
                                 >
                                     Borrar
                                 </button>
